@@ -3,7 +3,7 @@ const std = @import("std");
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
-    _ = b.addModule("okredis", .{
+    const okredis = b.addModule("okredis", .{
         .root_source_file = b.path("src/root.zig"),
     });
     const lib_unit_tests = b.addTest(.{
@@ -24,4 +24,23 @@ pub fn build(b: *std.Build) void {
 
     docs_step.dependOn(&docs_install.step);
     b.default_step.dependOn(docs_step);
+
+    // example
+    const example_step = b.step("example", "Build example");
+    const simple_example = b.addExecutable(.{
+        .name = "example",
+        .target = target,
+        .optimize = optimize,
+        .root_source_file = b.path("example.zig"),
+    });
+    simple_example.root_module.addImport("okredis", okredis);
+    const example_install = b.addInstallArtifact(simple_example, .{});
+    example_step.dependOn(&example_install.step);
+
+    const run_example = b.addRunArtifact(simple_example);
+
+    run_example.step.dependOn(b.getInstallStep());
+
+    const run_step = b.step("run-example", "Run the example");
+    run_step.dependOn(&run_example.step);
 }
