@@ -14,17 +14,14 @@ pub fn build(b: *std.Build) void {
     const run_lib_unit_tests = b.addRunArtifact(lib_unit_tests);
     b.default_step.dependOn(&run_lib_unit_tests.step);
 
-    // TODO: fix docs gen
-    // docs was doing this:
-    // const build_docs = b.addSystemCommand(&[_][]const u8{
-    //     b.zig_exe,
-    //     "test",
-    //     "src/okredis.zig",
-    //     // "-target",
-    //     // "x86_64-linux",
-    //     "-femit-docs",
-    //     "-fno-emit-bin",
-    //     "--output-dir",
-    //     ".",
-    // });
+    const docs_step = b.step("docs", "Emit docs");
+
+    const docs_install = b.addInstallDirectory(.{
+        .install_dir = .prefix,
+        .install_subdir = "docs",
+        .source_dir = lib_unit_tests.getEmittedDocs(),
+    });
+
+    docs_step.dependOn(&docs_install.step);
+    b.default_step.dependOn(docs_step);
 }
