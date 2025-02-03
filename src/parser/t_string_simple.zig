@@ -19,7 +19,7 @@ pub const SimpleStringParser = struct {
             .int => {
                 var buf: [100]u8 = undefined;
                 var end: usize = 0;
-                for (buf, 0..) |*elem, i| {
+                for (&buf, 0..) |*elem, i| {
                     const ch = try msg.readByte();
                     elem.* = ch;
                     if (ch == '\r') {
@@ -33,7 +33,7 @@ pub const SimpleStringParser = struct {
             .float => {
                 var buf: [100]u8 = undefined;
                 var end: usize = 0;
-                for (buf, 0..) |*elem, i| {
+                for (&buf, 0..) |*elem, i| {
                     const ch = try msg.readByte();
                     elem.* = ch;
                     if (ch == '\r') {
@@ -46,7 +46,7 @@ pub const SimpleStringParser = struct {
             },
             .array => |arr| {
                 var res: [arr.len]arr.child = undefined;
-                var bytesSlice = mem.sliceAsBytes(res[0..]);
+                const bytesSlice = mem.sliceAsBytes(res[0..]);
                 var ch = try msg.readByte();
                 for (bytesSlice) |*elem| {
                     if (ch == '\r') {

@@ -6,7 +6,7 @@ const builtin = @import("builtin");
 pub const BoolParser = struct {
     pub fn isSupported(comptime T: type) bool {
         return switch (@typeInfo(T)) {
-            .Bool, .int, .float => true,
+            .bool, .int, .float => true,
             else => false,
         };
     }
@@ -16,7 +16,7 @@ pub const BoolParser = struct {
         try msg.skipBytes(2, .{});
         return switch (@typeInfo(T)) {
             else => unreachable,
-            .Bool => ch == 't',
+            .bool => ch == 't',
             .int, .float => if (ch == 't') @as(T, 1) else @as(T, 0),
         };
     }

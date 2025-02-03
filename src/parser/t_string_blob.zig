@@ -16,7 +16,7 @@ pub const BlobStringParser = struct {
     pub fn parse(comptime T: type, comptime _: type, msg: anytype) !T {
         var buf: [100]u8 = undefined;
         var end: usize = 0;
-        for (buf, 0..) |*elem, i| {
+        for (&buf, 0..) |*elem, i| {
             const ch = try msg.readByte();
             elem.* = ch;
             if (ch == '\r') {
