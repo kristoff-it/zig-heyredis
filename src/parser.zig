@@ -271,7 +271,7 @@ pub const RESP3Parser = struct {
                     T.Redis.Parser.destroy(val, rootParser, allocator);
                 } else {
                     inline for (stc.fields) |f| {
-                        switch (@typeInfo(f.field_type)) {
+                        switch (@typeInfo(f.type)) {
                             else => {},
                             .@"enum",
                             .@"union",

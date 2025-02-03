@@ -15,7 +15,7 @@ pub const SetParser = struct {
     pub fn isSupportedAlloc(comptime T: type) bool {
         // HashMap
         if (@typeInfo(T) == .@"struct" and @hasDecl(T, "Entry")) {
-            return void == std.meta.fieldInfo(T.Entry, .value_ptr).field_type;
+            return void == std.meta.fieldInfo(T.Entry, .value_ptr).type;
         }
 
         return switch (@typeInfo(T)) {
@@ -27,16 +27,15 @@ pub const SetParser = struct {
     pub fn parse(comptime T: type, comptime rootParser: type, msg: anytype) !T {
         return parseImpl(T, rootParser, .{}, msg);
     }
-
     pub fn parseAlloc(comptime T: type, comptime rootParser: type, allocator: std.mem.Allocator, msg: anytype) !T {
         // HASHMAP
         if (@typeInfo(T) == .@"struct" and @hasDecl(T, "Entry")) {
-            const isManaged = @typeInfo(@TypeOf(T.deinit)).Fn.args.len == 1;
+            const isManaged = @typeInfo(@TypeOf(T.deinit)).@"fn".params.len == 1;
 
             // TODO: write real implementation
             var buf: [100]u8 = undefined;
             var end: usize = 0;
-            for (buf, 0..) |*elem, i| {
+            for (&buf, 0..) |*elem, i| {
                 const ch = try msg.readByte();
                 elem.* = ch;
                 if (ch == '\r') {
@@ -57,7 +56,7 @@ pub const SetParser = struct {
                 }
             }
 
-            const KeyType = std.meta.fieldInfo(T.Entry, .key_ptr).field_type;
+            const KeyType = std.meta.fieldInfo(T.Entry, .key_ptr).type;
 
             var foundNil = false;
             var foundErr = false;

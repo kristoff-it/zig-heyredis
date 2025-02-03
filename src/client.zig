@@ -219,9 +219,9 @@ pub fn RedisClient(comptime buffering: Buffering, comptime _: Logging) type {
                         .@"struct" => {
                             inline for (std.meta.fields(Ts)) |field| {
                                 if (@hasField(@TypeOf(allocator), "ptr")) {
-                                    @field(result, field.name) = try RESP3.parseAlloc(field.field_type, allocator.ptr, self.reader);
+                                    @field(result, field.name) = try RESP3.parseAlloc(field.type, allocator.ptr, self.reader);
                                 } else {
-                                    @field(result, field.name) = try RESP3.parse(field.field_type, self.reader);
+                                    @field(result, field.name) = try RESP3.parse(field.type, self.reader);
                                 }
                             }
                         },

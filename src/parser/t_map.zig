@@ -26,7 +26,7 @@ pub const MapParser = struct {
             },
             .@"struct" => |stc| {
                 for (stc.fields) |f|
-                    if (f.field_type == *anyopaque)
+                    if (f.type == *anyopaque)
                         return false;
                 return true;
             },
@@ -106,7 +106,7 @@ pub const MapParser = struct {
                     } else {
                         // Differently from the Lists case, here we can't `continue` immediately on fail
                         // because then we would lose count of how many tokens we consumed.
-                        const key = rootParser.parseAlloc(std.meta.fieldInfo(T.Entry, .key_ptr).field_type, allocator.ptr, msg) catch |err| switch (err) {
+                        const key = rootParser.parseAlloc(std.meta.fieldInfo(T.Entry, .key_ptr).type, allocator.ptr, msg) catch |err| switch (err) {
                             error.GotNilReply => blk: {
                                 foundNil = true;
                                 break :blk undefined;
@@ -117,7 +117,7 @@ pub const MapParser = struct {
                             },
                             else => return err,
                         };
-                        const val = rootParser.parseAlloc(std.meta.fieldInfo(T.Entry, .value_ptr).field_type, allocator.ptr, msg) catch |err| switch (err) {
+                        const val = rootParser.parseAlloc(std.meta.fieldInfo(T.Entry, .value_ptr).type, allocator.ptr, msg) catch |err| switch (err) {
                             error.GotNilReply => blk: {
                                 foundNil = true;
                                 break :blk undefined;
@@ -227,9 +227,9 @@ pub const MapParser = struct {
                         inline for (stc.fields) |f| {
                             if (std.mem.eql(u8, f.name, hash_field.toSlice())) {
                                 @field(result, f.name) = (if (@hasField(@TypeOf(allocator), "ptr"))
-                                    rootParser.parseAlloc(f.field_type, allocator.ptr, msg)
+                                    rootParser.parseAlloc(f.type, allocator.ptr, msg)
                                 else
-                                    rootParser.parse(f.field_type, msg)) catch |err| switch (err) {
+                                    rootParser.parse(f.type, msg)) catch |err| switch (err) {
                                     error.GotNilReply => blk: {
                                         foundNil = true;
                                         break :blk undefined;

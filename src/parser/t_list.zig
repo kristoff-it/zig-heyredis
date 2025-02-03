@@ -11,7 +11,7 @@ pub const ListParser = struct {
             .array => true,
             .@"struct" => |stc| {
                 for (stc.fields) |f|
-                    if (f.field_type == *anyopaque)
+                    if (f.type == *anyopaque)
                         return false;
                 return true;
             },
@@ -153,9 +153,9 @@ pub const ListParser = struct {
                         };
                     } else {
                         @field(result, field.name) = (if (@hasField(@TypeOf(allocator), "ptr"))
-                            rootParser.parseAlloc(field.field_type, allocator.ptr, msg)
+                            rootParser.parseAlloc(field.type, allocator.ptr, msg)
                         else
-                            rootParser.parse(field.field_type, msg)) catch |err| switch (err) {
+                            rootParser.parse(field.type, msg)) catch |err| switch (err) {
                             else => return err,
                             error.GotNilReply => blk: {
                                 foundNil = true;
