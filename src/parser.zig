@@ -373,12 +373,14 @@ test "float" {
     const allocator = std.heap.page_allocator;
     {
         {
-            const f = try RESP3Parser.parseAlloc(*f32, allocator, Make1Float().reader());
+            var fbs_1f = Make1Float();
+            const f = try RESP3Parser.parseAlloc(*f32, allocator, fbs_1f.reader());
             defer allocator.destroy(f);
             try testing.expect(f.* == 120.23);
         }
         {
-            const f = try RESP3Parser.parseAlloc([]f32, allocator, Make2Float().reader());
+            var fbs_2f = Make2Float();
+            const f = try RESP3Parser.parseAlloc([]f32, allocator, fbs_2f.reader());
             defer allocator.free(f);
             try testing.expectEqualSlices(f32, &[_]f32{ 1.1, 2.2 }, f);
         }
