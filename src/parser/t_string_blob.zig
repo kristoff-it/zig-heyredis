@@ -8,7 +8,7 @@ const testing = std.testing;
 pub const BlobStringParser = struct {
     pub fn isSupported(comptime T: type) bool {
         return switch (@typeInfo(T)) {
-            .Int, .Float, .array => true,
+            .int, .float, .array => true,
             else => false,
         };
     }
@@ -30,7 +30,7 @@ pub const BlobStringParser = struct {
 
         switch (@typeInfo(T)) {
             else => unreachable,
-            .Int => {
+            .int => {
                 // Try to parse an int from the string.
                 // TODO: write real implementation
                 if (size > buf.len) return error.SorryBadImplementation;
@@ -40,7 +40,7 @@ pub const BlobStringParser = struct {
                 try msg.skipBytes(2, .{});
                 return res;
             },
-            .Float => {
+            .float => {
                 // Try to parse a float from the string.
                 // TODO: write real implementation
                 if (size > buf.len) return error.SorryBadImplementation;

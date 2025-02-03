@@ -8,7 +8,7 @@ const testing = std.testing;
 pub const SimpleStringParser = struct {
     pub fn isSupported(comptime T: type) bool {
         return switch (@typeInfo(T)) {
-            .Int, .Float, .array => true,
+            .int, .float, .array => true,
             else => false,
         };
     }
@@ -16,7 +16,7 @@ pub const SimpleStringParser = struct {
     pub fn parse(comptime T: type, comptime _: type, msg: anytype) !T {
         switch (@typeInfo(T)) {
             else => unreachable,
-            .Int => {
+            .int => {
                 var buf: [100]u8 = undefined;
                 var end: usize = 0;
                 for (buf) |*elem, i| {
@@ -30,7 +30,7 @@ pub const SimpleStringParser = struct {
                 try msg.skipBytes(1, .{});
                 return fmt.parseInt(T, buf[0..end], 10);
             },
-            .Float => {
+            .float => {
                 var buf: [100]u8 = undefined;
                 var end: usize = 0;
                 for (buf) |*elem, i| {

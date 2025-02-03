@@ -148,8 +148,8 @@ pub const CommandSerializer = struct {
         // and serializeCommand(), Redis.Argument types
         // can call this function and pass a basic type.
         switch (@typeInfo(T)) {
-            .Int,
-            .Float,
+            .int,
+            .float,
             .comptime_int,
             => {
                 // TODO: write a better method

@@ -7,7 +7,7 @@ const InStream = std.io.InStream;
 pub const NumberParser = struct {
     pub fn isSupported(comptime T: type) bool {
         return switch (@typeInfo(T)) {
-            .Float, .Int => true,
+            .float, .int => true,
             else => false,
         };
     }
@@ -27,8 +27,8 @@ pub const NumberParser = struct {
         try msg.skipBytes(1, .{});
         return switch (@typeInfo(T)) {
             else => unreachable,
-            .Int => try fmt.parseInt(T, buf[0..end], 10),
-            .Float => try fmt.parseFloat(T, buf[0..end]),
+            .int => try fmt.parseInt(T, buf[0..end], 10),
+            .float => try fmt.parseFloat(T, buf[0..end]),
         };
     }
 

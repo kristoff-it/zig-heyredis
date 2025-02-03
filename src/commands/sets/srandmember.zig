@@ -7,7 +7,7 @@ pub const SRANDMEMBER = struct {
     count: Count,
 
     pub const Count = union(enum) {
-        One,
+        one,
         Count: usize,
 
         pub const RedisArguments = struct {

@@ -30,7 +30,7 @@ pub const BigNumParser = struct {
             return bigSlice;
         }
 
-        // T has to be `std.math.big.Int`
+        // T has to be `std.math.big.int`
         var res: T = try T.init(allocator);
         try res.setString(10, bigSlice);
         allocator.free(bigSlice);

@@ -1,12 +1,12 @@
-const builtin = @import("builtin");
 const std = @import("std");
 const fmt = std.fmt;
 const testing = std.testing;
+const builtin = @import("builtin");
 
 pub const BoolParser = struct {
     pub fn isSupported(comptime T: type) bool {
         return switch (@typeInfo(T)) {
-            .Bool, .Int, .Float => true,
+            .Bool, .int, .float => true,
             else => false,
         };
     }
@@ -17,7 +17,7 @@ pub const BoolParser = struct {
         return switch (@typeInfo(T)) {
             else => unreachable,
             .Bool => ch == 't',
-            .Int, .Float => if (ch == 't') @as(T, 1) else @as(T, 0),
+            .int, .float => if (ch == 't') @as(T, 1) else @as(T, 0),
         };
     }
 

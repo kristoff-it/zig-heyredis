@@ -23,8 +23,8 @@ pub const Value = union(enum) {
     /// Wraps either a string or a number.
     pub fn fromVar(value: anytype) Value {
         return switch (@typeInfo(@TypeOf(value))) {
-            .Int, .comptime_int => Value{ .Int = value },
-            .Float, .comptime_float => Value{ .Float = value },
+            .int, .comptime_int => Value{ .int = value },
+            .float, .comptime_float => Value{ .float = value },
             .array => Value{ .String = value[0..] },
             .pointer => Value{ .String = value },
             else => @compileError("Unsupported type."),
@@ -39,8 +39,8 @@ pub const Value = union(enum) {
         pub fn serialize(self: Value, comptime rootSerializer: type, msg: anytype) !void {
             switch (self) {
                 .String => |s| try rootSerializer.serializeArgument(msg, []const u8, s),
-                .Int => |i| try rootSerializer.serializeArgument(msg, i64, i),
-                .Float => |f| try rootSerializer.serializeArgument(msg, f64, f),
+                .int => |i| try rootSerializer.serializeArgument(msg, i64, i),
+                .float => |f| try rootSerializer.serializeArgument(msg, f64, f),
             }
         }
     };

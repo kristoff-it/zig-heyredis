@@ -7,7 +7,7 @@ const InStream = std.io.InStream;
 pub const DoubleParser = struct {
     pub fn isSupported(comptime T: type) bool {
         return switch (@typeInfo(T)) {
-            .Float => true,
+            .float => true,
             else => false,
         };
     }
@@ -27,7 +27,7 @@ pub const DoubleParser = struct {
         try msg.skipBytes(1, .{});
         return switch (@typeInfo(T)) {
             else => unreachable,
-            .Float => try fmt.parseFloat(T, buf[0..end]),
+            .float => try fmt.parseFloat(T, buf[0..end]),
         };
     }
 
