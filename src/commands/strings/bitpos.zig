@@ -2,7 +2,7 @@
 
 pub const Bit = enum {
     Zero,
-    One,
+    one,
 };
 
 pub const BITPOS = struct {
@@ -30,7 +30,7 @@ pub const BITPOS = struct {
         pub fn serialize(self: BITPOS, comptime rootSerializer: type, msg: anytype) !void {
             const bit = switch (self.bit) {
                 .Zero => "0",
-                .One => "1",
+                .one => "1",
             };
             return rootSerializer.serializeCommand(msg, .{ "BITPOS", self.key, bit, self.bounds });
         }
@@ -77,7 +77,7 @@ test "serializer" {
         correctMsg.reset();
         testMsg.reset();
 
-        var cmd = BITPOS.init("test", .Zero, -3, null);
+        const cmd = BITPOS.init("test", .Zero, -3, null);
         try serializer.serializeCommand(
             testMsg.writer(),
             cmd,
