@@ -397,34 +397,45 @@ test "optional" {
     const maybeInt: ?i64 = null;
     const maybeBool: ?bool = null;
     const maybeArr: ?[4]bool = null;
-    try testing.expectEqual(maybeInt, try RESP3Parser.parse(?i64, MakeNull().reader()));
-    try testing.expectEqual(maybeBool, try RESP3Parser.parse(?bool, MakeNull().reader()));
-    try testing.expectEqual(maybeArr, try RESP3Parser.parse(?[4]bool, MakeNull().reader()));
+    var fbs_null = MakeNull();
+    try testing.expectEqual(maybeInt, try RESP3Parser.parse(?i64, fbs_null.reader()));
+    fbs_null.reset();
+    try testing.expectEqual(maybeBool, try RESP3Parser.parse(?bool, fbs_null.reader()));
+    fbs_null.reset();
+    try testing.expectEqual(maybeArr, try RESP3Parser.parse(?[4]bool, fbs_null.reader()));
 }
 fn MakeNull() std.io.FixedBufferStream([]const u8) {
     return std.io.fixedBufferStream("_\r\n"[0..]);
 }
 
 test "array" {
-    try testing.expectError(error.LengthMismatch, RESP3Parser.parse([5]i64, MakeArray().reader()));
+    var fbs_arr = MakeArray();
+    try testing.expectError(error.LengthMismatch, RESP3Parser.parse([5]i64, fbs_arr.reader()));
     //try testing.expectError(error.LengthMismatch, RESP3Parser.parse([0]i64, MakeArray().reader()));
-    try testing.expectError(error.UnsupportedConversion, RESP3Parser.parse([2]i64, MakeArray().reader()));
-    try testing.expectEqual([2]f32{ 1.2, 3.4 }, try RESP3Parser.parse([2]f32, MakeArray().reader()));
+    fbs_arr.reset();
+    try testing.expectError(error.UnsupportedConversion, RESP3Parser.parse([2]i64, fbs_arr.reader()));
+    fbs_arr.reset();
+    try testing.expectEqual([2]f32{ 1.2, 3.4 }, try RESP3Parser.parse([2]f32, fbs_arr.reader()));
 }
 fn MakeArray() std.io.FixedBufferStream([]const u8) {
     return std.io.fixedBufferStream("*2\r\n,1.2\r\n,3.4\r\n"[0..]);
 }
 
 test "string" {
-    try testing.expectError(error.LengthMismatch, RESP3Parser.parse([5]u8, MakeString().reader()));
-    try testing.expectError(error.LengthMismatch, RESP3Parser.parse([2]u16, MakeString().reader()));
-    try testing.expectEqualSlices(u8, "Hello World!", &try RESP3Parser.parse([12]u8, MakeSimpleString().reader()));
-    try testing.expectError(error.LengthMismatch, RESP3Parser.parse([11]u8, MakeSimpleString().reader()));
-    try testing.expectError(error.LengthMismatch, RESP3Parser.parse([13]u8, MakeSimpleString().reader()));
+    var fbs_str = MakeString();
+    try testing.expectError(error.LengthMismatch, RESP3Parser.parse([5]u8, fbs_str.reader()));
+    fbs_str.reset();
+    try testing.expectError(error.LengthMismatch, RESP3Parser.parse([2]u16, fbs_str.reader()));
+    var fbs_str2 = MakeSimpleString();
+    try testing.expectEqualSlices(u8, "Hello World!", &try RESP3Parser.parse([12]u8, fbs_str2.reader()));
+    fbs_str2.reset();
+    try testing.expectError(error.LengthMismatch, RESP3Parser.parse([13]u8, fbs_str2.reader()));
 
     const allocator = std.heap.page_allocator;
-    try testing.expectEqualSlices(u8, "Banana", try RESP3Parser.parseAlloc([]u8, allocator, MakeString().reader()));
-    try testing.expectEqualSlices(u8, "Hello World!", try RESP3Parser.parseAlloc([]u8, allocator, MakeSimpleString().reader()));
+    fbs_str.reset();
+    try testing.expectEqualSlices(u8, "Banana", try RESP3Parser.parseAlloc([]u8, allocator, fbs_str.reader()));
+    fbs_str2.reset();
+    try testing.expectEqualSlices(u8, "Hello World!", try RESP3Parser.parseAlloc([]u8, allocator, fbs_str2.reader()));
 }
 fn MakeString() std.io.FixedBufferStream([]const u8) {
     return std.io.fixedBufferStream("$6\r\nBanana\r\n"[0..]);
@@ -440,8 +451,8 @@ test "map2struct" {
         second: bool,
         third: FixBuf(11),
     };
-
-    const res = try RESP3Parser.parse(MyStruct, MakeMap().reader());
+    var fbs_map = MakeMap();
+    const res = try RESP3Parser.parse(MyStruct, fbs_map.reader());
     try testing.expect(res.first == 12.34);
     try testing.expect(res.second == true);
     try testing.expectEqualSlices(u8, "Hello World", res.third.toSlice());
@@ -449,11 +460,13 @@ test "map2struct" {
 test "hashmap" {
     const allocator = std.heap.page_allocator;
     const FloatDict = std.StringHashMap(f64);
-    const res = try RESP3Parser.parseAlloc(FloatDict, allocator, MakeFloatMap().reader());
+    var fbs_map = MakeFloatMap();
+    const res = try RESP3Parser.parseAlloc(FloatDict, allocator, fbs_map.reader());
     try testing.expect(12.34 == res.get("aaa").?);
     try testing.expect(56.78 == res.get("bbb").?);
     try testing.expect(99.99 == res.get("ccc").?);
 }
+// TODO: get rid if this
 fn MakeFloatMap() std.io.FixedBufferStream([]const u8) {
     return std.io.fixedBufferStream("%3\r\n$3\r\naaa\r\n,12.34\r\n$3\r\nbbb\r\n,56.78\r\n$3\r\nccc\r\n,99.99\r\n"[0..]);
 }
