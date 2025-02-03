@@ -306,7 +306,8 @@ test "evil indirection" {
     const allocator = std.heap.page_allocator;
 
     {
-        const yes = try RESP3Parser.parseAlloc(?**?*f32, allocator, MakeEvilFloat().reader());
+        var fbs_evil_f = MakeEvilFloat();
+        const yes = try RESP3Parser.parseAlloc(?**?*f32, allocator, fbs_evil_f.reader());
         defer RESP3Parser.freeReply(yes, allocator);
 
         if (yes) |v| {
@@ -317,7 +318,8 @@ test "evil indirection" {
     }
 
     {
-        const no = try RESP3Parser.parseAlloc(?***f32, allocator, MakeEvilNil().reader());
+        var fbs_evil_nil = MakeEvilNil();
+        const no = try RESP3Parser.parseAlloc(?***f32, allocator, fbs_evil_nil.reader());
         if (no) |_| unreachable;
     }
 
