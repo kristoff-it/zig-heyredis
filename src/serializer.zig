@@ -154,14 +154,14 @@ pub const CommandSerializer = struct {
             => {
                 // TODO: write a better method
                 var buf: [100]u8 = undefined;
-                var res = try std.fmt.bufPrint(buf[0..], "{}", .{val});
+                const res = try std.fmt.bufPrint(buf[0..], "{}", .{val});
                 // std.debug.warn("${}\r\n{s}\r\n", res.len, res);
                 try msg.print("${}\r\n{s}\r\n", .{ res.len, res });
             },
             .comptime_float => {
                 // TODO: write a better method, avoid duplication?
                 var buf: [100]u8 = undefined;
-                var res = try std.fmt.bufPrint(buf[0..], "{}", .{@as(f64, val)});
+                const res = try std.fmt.bufPrint(buf[0..], "{}", .{@as(f64, val)});
                 // std.debug.warn("${}\r\n{s}\r\n", res.len, res);
                 try msg.print("${}\r\n{s}\r\n", .{ res.len, res });
             },
