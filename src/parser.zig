@@ -110,7 +110,7 @@ pub const RESP3Parser = struct {
                 switch (ptr.size) {
                     .one => {
                         // Single-item pointer, allocate it and recur.
-                        var res: *ptr.child = try allocator.ptr.create(ptr.child);
+                        const res: *ptr.child = try allocator.ptr.create(ptr.child);
                         errdefer allocator.ptr.destroy(res);
                         res.* = try parseImpl(ptr.child, tag, allocator, msg);
                         return res;
@@ -134,7 +134,7 @@ pub const RESP3Parser = struct {
         if (tag == '|') {
             // If the type declares to be able to decode attributes, we delegate immediately.
             if (comptime traits.handlesAttributes(T)) {
-                var x: T = if (@hasField(@TypeOf(allocator), "ptr"))
+                const x: T = if (@hasField(@TypeOf(allocator), "ptr"))
                     try T.Redis.Parser.parseAlloc(tag, rootParser, allocator.ptr, msg)
                 else
                     try T.Redis.Parser.parse(tag, rootParser, msg);
@@ -152,7 +152,7 @@ pub const RESP3Parser = struct {
 
         // If the type implement its own decoding procedure, we delegate the job to it.
         if (comptime traits.isParserType(T)) {
-            var x: T = if (@hasField(@TypeOf(allocator), "ptr"))
+            const x: T = if (@hasField(@TypeOf(allocator), "ptr"))
                 try T.Redis.Parser.parseAlloc(tag, rootParser, allocator.ptr, msg)
             else
                 try T.Redis.Parser.parse(nextTag, rootParser, msg);

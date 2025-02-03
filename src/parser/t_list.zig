@@ -1,6 +1,6 @@
-const builtin = @import("builtin");
 const std = @import("std");
 const fmt = std.fmt;
+const builtin = @import("builtin");
 
 /// Parses RedisList values.
 /// Uses RESP3Parser to delegate parsing of the list contents recursively.
@@ -72,7 +72,7 @@ pub const ListParser = struct {
         // TODO: write real implementation
         var buf: [100]u8 = undefined;
         var end: usize = 0;
-        for (buf) |*elem, i| {
+        for (buf, 0..) |*elem, i| {
             const ch = try msg.readByte();
             elem.* = ch;
             if (ch == '\r') {
@@ -90,7 +90,7 @@ pub const ListParser = struct {
                     @compileError("To decode a slice you need to use sendAlloc / pipeAlloc / transAlloc!");
                 }
 
-                var result = try allocator.ptr.alloc(ptr.child, size);
+                const result = try allocator.ptr.alloc(ptr.child, size);
                 errdefer allocator.ptr.free(result);
                 try decodeArray(ptr.child, result, rootParser, allocator, msg);
                 return result;

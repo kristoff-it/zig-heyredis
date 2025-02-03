@@ -77,7 +77,7 @@ pub fn OrErr(comptime T: type) type {
                             // TODO: write real implementation
                             var buf: [100]u8 = undefined;
                             var end: usize = 0;
-                            for (buf) |*elem, i| {
+                            for (buf, 0..) |*elem, i| {
                                 const ch = try msg.readByte();
                                 elem.* = ch;
                                 if (ch == '\r') {
@@ -87,12 +87,12 @@ pub fn OrErr(comptime T: type) type {
                             }
 
                             try msg.skipBytes(1, .{});
-                            var size = try fmt.parseInt(usize, buf[0..end], 10);
+                            const size = try fmt.parseInt(usize, buf[0..end], 10);
                             var res = Self{ .Err = undefined };
 
                             // Parse the Code part
                             var ch = try msg.readByte();
-                            for (res.Err._buf) |*elem, i| {
+                            for (res.Err._buf, 0..) |*elem, i| {
                                 if (i == size) {
                                     elem.* = ch;
                                     res.Err.end = i;
@@ -123,7 +123,7 @@ pub fn OrErr(comptime T: type) type {
 
                             // Parse the Code part
                             var ch = try msg.readByte();
-                            for (res.Err._buf) |*elem, i| {
+                            for (res.Err._buf, 0..) |*elem, i| {
                                 switch (ch) {
                                     ' ' => {
                                         res.Err.end = i;
@@ -193,7 +193,7 @@ pub fn OrFullErr(comptime T: type) type {
                             // TODO: write real implementation
                             var buf: [100]u8 = undefined;
                             var end: usize = 0;
-                            for (buf) |*elem, i| {
+                            for (buf, 0..) |*elem, i| {
                                 const ch = try msg.readByte();
                                 elem.* = ch;
                                 if (ch == '\r') {
@@ -203,13 +203,13 @@ pub fn OrFullErr(comptime T: type) type {
                             }
 
                             try msg.skipBytes(1, .{});
-                            var size = try fmt.parseInt(usize, buf[0..end], 10);
+                            const size = try fmt.parseInt(usize, buf[0..end], 10);
                             var res = Self{ .Err = undefined };
                             res.Err.message = &[0]u8{};
 
                             // Parse the Code part
                             var ch = try msg.readByte();
-                            for (res.Err._buf) |*elem, i| {
+                            for (res.Err._buf, 0..) |*elem, i| {
                                 if (i == size) {
                                     elem.* = ch;
                                     res.Err.end = i;
@@ -235,7 +235,7 @@ pub fn OrFullErr(comptime T: type) type {
                             // Alloc difference:
                             const remainder = size - res.Err.end;
                             if (remainder == 0) return res;
-                            var slice = try allocator.alloc(u8, remainder);
+                            const slice = try allocator.alloc(u8, remainder);
                             errdefer allocator.free(slice);
 
                             try msg.readNoEof(slice);
@@ -249,7 +249,7 @@ pub fn OrFullErr(comptime T: type) type {
 
                             // Parse the Code part
                             var ch = try msg.readByte();
-                            for (res.Err._buf) |*elem, i| {
+                            for (res.Err._buf, 0..) |*elem, i| {
                                 switch (ch) {
                                     ' ' => {
                                         res.Err.end = i;

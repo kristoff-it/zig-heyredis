@@ -1,7 +1,8 @@
-const builtin = @import("builtin");
 const std = @import("std");
 const testing = std.testing;
 const fmt = std.fmt;
+const builtin = @import("builtin");
+
 const FixBuf = @import("../types/fixbuf.zig").FixBuf;
 
 // // TODO: decide what tho do with this weird trait.
@@ -55,7 +56,7 @@ pub const MapParser = struct {
         // TODO: write real implementation
         var buf: [100]u8 = undefined;
         var end: usize = 0;
-        for (buf) |*elem, i| {
+        for (buf, 0..) |*elem, i| {
             const ch = try msg.readByte();
             elem.* = ch;
             if (ch == '\r') {
@@ -105,7 +106,7 @@ pub const MapParser = struct {
                     } else {
                         // Differently from the Lists case, here we can't `continue` immediately on fail
                         // because then we would lose count of how many tokens we consumed.
-                        var key = rootParser.parseAlloc(std.meta.fieldInfo(T.Entry, .key_ptr).field_type, allocator.ptr, msg) catch |err| switch (err) {
+                        const key = rootParser.parseAlloc(std.meta.fieldInfo(T.Entry, .key_ptr).field_type, allocator.ptr, msg) catch |err| switch (err) {
                             error.GotNilReply => blk: {
                                 foundNil = true;
                                 break :blk undefined;
@@ -116,7 +117,7 @@ pub const MapParser = struct {
                             },
                             else => return err,
                         };
-                        var val = rootParser.parseAlloc(std.meta.fieldInfo(T.Entry, .value_ptr).field_type, allocator.ptr, msg) catch |err| switch (err) {
+                        const val = rootParser.parseAlloc(std.meta.fieldInfo(T.Entry, .value_ptr).field_type, allocator.ptr, msg) catch |err| switch (err) {
                             error.GotNilReply => blk: {
                                 foundNil = true;
                                 break :blk undefined;
@@ -178,7 +179,7 @@ pub const MapParser = struct {
                 comptime var max_len = 0;
                 comptime var fieldNames: [stc.fields.len][]const u8 = undefined;
                 comptime {
-                    for (stc.fields) |f, i| {
+                    for (stc.fields, 0..) |f, i| {
                         if (f.name.len > max_len) max_len = f.name.len;
                         fieldNames[i] = f.name;
                     }
@@ -274,7 +275,7 @@ pub const MapParser = struct {
                 // we know the array has a child type of [2]X.
                 var foundNil = false;
                 var foundErr = false;
-                var result: T = undefined;
+                const result: T = undefined;
                 for (result) |*couple| {
                     if (@hasField(@TypeOf(allocator), "ptr")) {
                         couple[0] = rootParser.parseAlloc(@TypeOf(couple[0]), allocator.ptr, msg) catch |err| switch (err) {
@@ -339,7 +340,7 @@ pub const MapParser = struct {
                 // we know the array has a child type of [2]X.
                 var foundNil = false;
                 var foundErr = false;
-                var result = try allocator.ptr.alloc(ptr.child, size); // TODO: recover from OOM?
+                const result = try allocator.ptr.alloc(ptr.child, size); // TODO: recover from OOM?
                 errdefer allocator.ptr.free(result);
 
                 for (result) |*couple| {
