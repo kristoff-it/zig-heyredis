@@ -1,7 +1,7 @@
-const builtin = @import("builtin");
 const std = @import("std");
 const fmt = std.fmt;
 const InStream = std.io.InStream;
+const builtin = @import("builtin");
 
 /// Parses RedisNumber values
 pub const NumberParser = struct {
@@ -16,7 +16,7 @@ pub const NumberParser = struct {
         // TODO: write real implementation
         var buf: [100]u8 = undefined;
         var end: usize = 0;
-        for (buf) |*elem, i| {
+        for (buf, 0..) |*elem, i| {
             const ch = try msg.readByte();
             elem.* = ch;
             if (ch == '\r') {
