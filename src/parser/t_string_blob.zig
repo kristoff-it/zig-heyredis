@@ -155,7 +155,7 @@ test "string" {
             try testing.expectEqualSlices(u8, s[0..13], "Hello World!\x00");
         }
         {
-            var fbs_ji2 = MakeString();
+            var fbs_ji2 = MakeEmoji2();
             const s = try BlobStringParser.parseAlloc([][4]u8, struct {}, allocator, fbs_ji2.reader());
             defer allocator.free(s);
             try testing.expectEqualSlices(u8, "😈", &s[0]);
