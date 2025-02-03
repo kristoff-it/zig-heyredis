@@ -1,8 +1,8 @@
-const builtin = @import("builtin");
 const std = @import("std");
 const fmt = std.fmt;
 const mem = std.mem;
 const testing = std.testing;
+const builtin = @import("builtin");
 
 /// Parses RedisBlobString values
 pub const BlobStringParser = struct {
@@ -52,7 +52,7 @@ pub const BlobStringParser = struct {
             },
             .array => |arr| {
                 var res: [arr.len]arr.child = undefined;
-                var bytesSlice = mem.sliceAsBytes(res[0..]);
+                const bytesSlice = mem.sliceAsBytes(res[0..]);
                 if (bytesSlice.len != size) {
                     return error.LengthMismatch;
                 }
@@ -79,7 +79,7 @@ pub const BlobStringParser = struct {
                 // TODO: write real implementation
                 var buf: [100]u8 = undefined;
                 var end: usize = 0;
-                for (buf) |*elem, i| {
+                for (&buf, 0..) |*elem, i| {
                     const ch = try msg.readByte();
                     elem.* = ch;
                     if (ch == '\r') {
@@ -94,7 +94,7 @@ pub const BlobStringParser = struct {
                 if (ptr.size == .c) size += @sizeOf(ptr.child);
 
                 const elemSize = std.math.divExact(usize, size, @sizeOf(ptr.child)) catch return error.LengthMismatch;
-                var res = try allocator.alignedAlloc(ptr.child, @alignOf(T), elemSize);
+                const res = try allocator.alignedAlloc(ptr.child, @alignOf(T), elemSize);
                 errdefer allocator.free(res);
 
                 var bytes = mem.sliceAsBytes(res);
@@ -112,7 +112,7 @@ pub const BlobStringParser = struct {
                 return switch (ptr.size) {
                     .one, .many => @compileError("Only Slices and C pointers should reach sub-parsers"),
                     .slice => res,
-                    .c => @ptrCast(T, res.ptr),
+                    .c => @ptrCast(res.ptr),
                 };
             },
             else => return parse(T, struct {}, msg),
