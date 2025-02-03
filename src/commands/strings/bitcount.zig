@@ -26,7 +26,7 @@ pub const BITCOUNT = struct {
 
     pub const Bounds = union(enum) {
         FullString,
-        Slice: struct {
+        slice: struct {
             start: isize,
             end: isize,
         },

@@ -17,8 +17,8 @@ pub const FV = struct {
 /// Union used to allow users to pass numbers transparently to SET-like commands.
 pub const Value = union(enum) {
     String: []const u8,
-    Int: i64,
-    Float: f64,
+    int: i64,
+    float: f64,
 
     /// Wraps either a string or a number.
     pub fn fromVar(value: anytype) Value {

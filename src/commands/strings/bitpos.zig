@@ -2,7 +2,7 @@
 
 pub const Bit = enum {
     Zero,
-    One,
+    one,
 };
 
 pub const BITPOS = struct {
