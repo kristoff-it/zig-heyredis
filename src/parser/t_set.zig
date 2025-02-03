@@ -72,7 +72,7 @@ pub const SetParser = struct {
                         else => return err,
                     };
                 } else {
-                    var key = rootParser.parseAlloc(KeyType, allocator, msg) catch |err| switch (err) {
+                    const key = rootParser.parseAlloc(KeyType, allocator, msg) catch |err| switch (err) {
                         error.GotNilReply => {
                             foundNil = true;
                             continue;
