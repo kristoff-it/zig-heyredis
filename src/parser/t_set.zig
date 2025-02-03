@@ -7,19 +7,19 @@ pub const SetParser = struct {
     // TODO: prevent users from unmarshaling structs out of strings
     pub fn isSupported(comptime T: type) bool {
         return switch (@typeInfo(T)) {
-            .Array => true,
+            .array => true,
             else => false,
         };
     }
 
     pub fn isSupportedAlloc(comptime T: type) bool {
         // HashMap
-        if (@typeInfo(T) == .Struct and @hasDecl(T, "Entry")) {
+        if (@typeInfo(T) == .@"struct" and @hasDecl(T, "Entry")) {
             return void == std.meta.fieldInfo(T.Entry, .value_ptr).field_type;
         }
 
         return switch (@typeInfo(T)) {
-            .Pointer => true,
+            .pointer => true,
             else => isSupported(T),
         };
     }
@@ -30,7 +30,7 @@ pub const SetParser = struct {
 
     pub fn parseAlloc(comptime T: type, comptime rootParser: type, allocator: std.mem.Allocator, msg: anytype) !T {
         // HASHMAP
-        if (@typeInfo(T) == .Struct and @hasDecl(T, "Entry")) {
+        if (@typeInfo(T) == .@"struct" and @hasDecl(T, "Entry")) {
             const isManaged = @typeInfo(@TypeOf(T.deinit)).Fn.args.len == 1;
 
             // TODO: write real implementation

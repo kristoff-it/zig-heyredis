@@ -25,8 +25,8 @@ pub const Value = union(enum) {
         return switch (@typeInfo(@TypeOf(value))) {
             .Int, .ComptimeInt => Value{ .Int = value },
             .Float, .ComptimeFloat => Value{ .Float = value },
-            .Array => Value{ .String = value[0..] },
-            .Pointer => Value{ .String = value },
+            .array => Value{ .String = value[0..] },
+            .pointer => Value{ .String = value },
             else => @compileError("Unsupported type."),
         };
     }

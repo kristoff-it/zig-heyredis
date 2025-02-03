@@ -7,7 +7,7 @@ const FixBuf = @import("../types/fixbuf.zig").FixBuf;
 // // TODO: decide what tho do with this weird trait.
 // inline fn isFragmentType(comptime T: type) bool {
 //     const tid = @typeInfo(T);
-//     return (tid == .Struct or tid == .Enum or tid == .Union) and
+//     return (tid == .@"struct" or tid == .@"enum" or tid == .@"union") and
 //         @hasDecl(T, "Redis") and @hasDecl(T.Redis, "Parser") and @hasDecl(T.Redis.Parser, "TokensPerFragment");
 // }
 
@@ -18,12 +18,12 @@ pub const MapParser = struct {
     // the layout of each field-value pair.
     pub fn isSupported(comptime T: type) bool {
         return switch (@typeInfo(T)) {
-            .Array => |arr| switch (@typeInfo(arr.child)) {
-                .Array => |child| child.len == 2,
-                // .Struct, .Union => isFVType(), TODO
+            .array => |arr| switch (@typeInfo(arr.child)) {
+                .array => |child| child.len == 2,
+                // .@"struct", .@"union" => isFVType(), TODO
                 else => false,
             },
-            .Struct => |stc| {
+            .@"struct" => |stc| {
                 for (stc.fields) |f|
                     if (f.field_type == *anyopaque)
                         return false;
@@ -35,9 +35,9 @@ pub const MapParser = struct {
 
     pub fn isSupportedAlloc(comptime T: type) bool {
         return switch (@typeInfo(T)) {
-            .Pointer => |ptr| switch (@typeInfo(ptr.child)) {
-                .Pointer => false, // TODO: decide if we want to support it or not.
-                .Array => |child| child.len == 2,
+            .pointer => |ptr| switch (@typeInfo(ptr.child)) {
+                .pointer => false, // TODO: decide if we want to support it or not.
+                .array => |child| child.len == 2,
                 else => false,
             },
             else => isSupported(T),
@@ -69,7 +69,7 @@ pub const MapParser = struct {
 
         // HASHMAP
         if (@hasField(@TypeOf(allocator), "ptr")) {
-            if (@typeInfo(T) == .Struct and @hasDecl(T, "Entry")) {
+            if (@typeInfo(T) == .@"struct" and @hasDecl(T, "Entry")) {
                 const isManaged = @hasField(T, "unmanaged");
                 var hmap = if (isManaged) T.init(allocator.ptr) else T{};
                 errdefer {
@@ -147,7 +147,7 @@ pub const MapParser = struct {
 
         switch (@typeInfo(T)) {
             else => unreachable,
-            .Struct => |stc| {
+            .@"struct" => |stc| {
                 var foundNil = false;
                 var foundErr = false;
                 if (stc.fields.len != size) {
@@ -250,7 +250,7 @@ pub const MapParser = struct {
                 if (foundNil) return error.GotNilReply;
                 return result;
             },
-            .Array => |arr| {
+            .array => |arr| {
                 if (arr.len != size) {
                     // The user requested an array but the map reply from Redis
                     // contains a different amount of items.
@@ -330,7 +330,7 @@ pub const MapParser = struct {
                 if (foundNil) return error.GotNilReply;
                 return result;
             },
-            .Pointer => |ptr| {
+            .pointer => |ptr| {
                 if (!@hasField(@TypeOf(allocator), "ptr")) {
                     @compileError("To decode a slice you need to use sendAlloc / pipeAlloc / transAlloc!");
                 }

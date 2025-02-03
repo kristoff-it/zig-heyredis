@@ -8,8 +8,8 @@ pub const ListParser = struct {
     // TODO: prevent users from unmarshaling structs out of strings
     pub fn isSupported(comptime T: type) bool {
         return switch (@typeInfo(T)) {
-            .Array => true,
-            .Struct => |stc| {
+            .array => true,
+            .@"struct" => |stc| {
                 for (stc.fields) |f|
                     if (f.field_type == *anyopaque)
                         return false;
@@ -21,7 +21,7 @@ pub const ListParser = struct {
 
     pub fn isSupportedAlloc(comptime T: type) bool {
         return switch (@typeInfo(T)) {
-            .Pointer => true,
+            .pointer => true,
             else => isSupported(T),
         };
     }
@@ -85,7 +85,7 @@ pub const ListParser = struct {
 
         switch (@typeInfo(T)) {
             else => unreachable,
-            .Pointer => |ptr| {
+            .pointer => |ptr| {
                 if (!@hasField(@TypeOf(allocator), "ptr")) {
                     @compileError("To decode a slice you need to use sendAlloc / pipeAlloc / transAlloc!");
                 }
@@ -95,7 +95,7 @@ pub const ListParser = struct {
                 try decodeArray(ptr.child, result, rootParser, allocator, msg);
                 return result;
             },
-            .Array => |arr| {
+            .array => |arr| {
                 if (arr.len != size) {
                     // The user requested an array but the list reply from Redis
                     // contains a different amount of items.
@@ -120,7 +120,7 @@ pub const ListParser = struct {
                 try decodeArray(arr.child, result[0..], rootParser, allocator, msg);
                 return result;
             },
-            .Struct => |stc| {
+            .@"struct" => |stc| {
                 var foundNil = false;
                 var foundErr = false;
                 if (stc.fields.len != size) {

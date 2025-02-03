@@ -8,7 +8,7 @@ const testing = std.testing;
 pub const BlobStringParser = struct {
     pub fn isSupported(comptime T: type) bool {
         return switch (@typeInfo(T)) {
-            .Int, .Float, .Array => true,
+            .Int, .Float, .array => true,
             else => false,
         };
     }
@@ -50,7 +50,7 @@ pub const BlobStringParser = struct {
                 try msg.skipBytes(2, .{});
                 return res;
             },
-            .Array => |arr| {
+            .array => |arr| {
                 var res: [arr.len]arr.child = undefined;
                 var bytesSlice = mem.sliceAsBytes(res[0..]);
                 if (bytesSlice.len != size) {
@@ -66,7 +66,7 @@ pub const BlobStringParser = struct {
 
     pub fn isSupportedAlloc(comptime T: type) bool {
         return switch (@typeInfo(T)) {
-            .Pointer => true,
+            .pointer => true,
             else => isSupported(T),
         };
     }
@@ -75,7 +75,7 @@ pub const BlobStringParser = struct {
         // @compileLog(@typeInfo(T));
         // std.debug.print("\n\nTYPE={}\n\n", .{@typeInfo(T)});
         switch (@typeInfo(T)) {
-            .Pointer => |ptr| {
+            .pointer => |ptr| {
                 // TODO: write real implementation
                 var buf: [100]u8 = undefined;
                 var end: usize = 0;
@@ -91,16 +91,16 @@ pub const BlobStringParser = struct {
                 try msg.skipBytes(1, .{});
                 var size = try fmt.parseInt(usize, buf[0..end], 10);
 
-                if (ptr.size == .C) size += @sizeOf(ptr.child);
+                if (ptr.size == .c) size += @sizeOf(ptr.child);
 
                 const elemSize = std.math.divExact(usize, size, @sizeOf(ptr.child)) catch return error.LengthMismatch;
                 var res = try allocator.alignedAlloc(ptr.child, @alignOf(T), elemSize);
                 errdefer allocator.free(res);
 
                 var bytes = mem.sliceAsBytes(res);
-                if (ptr.size == .C) {
+                if (ptr.size == .c) {
                     msg.readNoEof(bytes[0 .. size - @sizeOf(ptr.child)]) catch return error.GraveProtocolError;
-                    if (ptr.size == .C) {
+                    if (ptr.size == .c) {
                         // TODO: maybe reword this loop for better performance?
                         for (bytes[(size - @sizeOf(ptr.child))..]) |*b| b.* = 0;
                     }
@@ -110,9 +110,9 @@ pub const BlobStringParser = struct {
                 try msg.skipBytes(2, .{});
 
                 return switch (ptr.size) {
-                    .One, .Many => @compileError("Only Slices and C pointers should reach sub-parsers"),
-                    .Slice => res,
-                    .C => @ptrCast(T, res.ptr),
+                    .one, .many => @compileError("Only Slices and C pointers should reach sub-parsers"),
+                    .slice => res,
+                    .c => @ptrCast(T, res.ptr),
                 };
             },
             else => return parse(T, struct {}, msg),

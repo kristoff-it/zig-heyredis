@@ -30,7 +30,7 @@ pub const BITPOS = struct {
         pub fn serialize(self: BITPOS, comptime rootSerializer: type, msg: anytype) !void {
             const bit = switch (self.bit) {
                 .Zero => "0",
-                .One => "1",
+                .one => "1",
             };
             return rootSerializer.serializeCommand(msg, .{ "BITPOS", self.key, bit, self.bounds });
         }

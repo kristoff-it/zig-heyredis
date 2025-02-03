@@ -1,20 +1,20 @@
-const builtin = @import("builtin");
 const std = @import("std");
 const fmt = std.fmt;
 const testing = std.testing;
 const InStream = std.io.InStream;
 const Allocator = std.mem.Allocator;
+const builtin = @import("builtin");
 
 const BigNumParser = @import("./parser/t_bignum.zig").BigNumParser;
-const VoidParser = @import("./parser/void.zig").VoidParser;
-const NumberParser = @import("./parser/t_number.zig").NumberParser;
 const BoolParser = @import("./parser/t_bool.zig").BoolParser;
-const BlobStringParser = @import("./parser/t_string_blob.zig").BlobStringParser;
-const SimpleStringParser = @import("./parser/t_string_simple.zig").SimpleStringParser;
 const DoubleParser = @import("./parser/t_double.zig").DoubleParser;
 const ListParser = @import("./parser/t_list.zig").ListParser;
-const SetParser = @import("./parser/t_set.zig").SetParser;
 const MapParser = @import("./parser/t_map.zig").MapParser;
+const NumberParser = @import("./parser/t_number.zig").NumberParser;
+const SetParser = @import("./parser/t_set.zig").SetParser;
+const BlobStringParser = @import("./parser/t_string_blob.zig").BlobStringParser;
+const SimpleStringParser = @import("./parser/t_string_simple.zig").SimpleStringParser;
+const VoidParser = @import("./parser/void.zig").VoidParser;
 const traits = @import("./traits.zig");
 
 pub const RESP3Parser = struct {
@@ -86,7 +86,7 @@ pub const RESP3Parser = struct {
         // - Single-item pointers require us to allocate the type and recur.
         // - Slices are the only type of pointer that we want to delegate to sub-parsers.
         switch (@typeInfo(T)) {
-            .Optional => |opt| {
+            .optional => |opt| {
                 var nextTag = tag;
                 if (tag == '|') {
                     // If the type is an optional, we discard any potential attribute.
@@ -103,23 +103,23 @@ pub const RESP3Parser = struct {
                 // Otherwise recur with the underlying type.
                 return try parseImpl(opt.child, nextTag, allocator, msg);
             },
-            .Pointer => |ptr| {
+            .pointer => |ptr| {
                 if (!@hasField(@TypeOf(allocator), "ptr")) {
                     @compileError("`parse` can't perform allocations so it can't handle pointers, use `parseAlloc` instead.");
                 }
                 switch (ptr.size) {
-                    .One => {
+                    .one => {
                         // Single-item pointer, allocate it and recur.
                         var res: *ptr.child = try allocator.ptr.create(ptr.child);
                         errdefer allocator.ptr.destroy(res);
                         res.* = try parseImpl(ptr.child, tag, allocator, msg);
                         return res;
                     },
-                    .Many, .C => {
+                    .many, .c => {
                         @panic("!");
                         // @compileError("Pointers to unknown size or C-type are not supported.");
                     },
-                    .Slice => {
+                    .slice => {
                         // Slices are ok. We continue.
                     },
                 }
@@ -208,15 +208,15 @@ pub const RESP3Parser = struct {
 
         switch (@typeInfo(T)) {
             else => return,
-            .Optional => if (val) |v| freeReply(v, allocator),
-            .Array => |arr| {
+            .optional => if (val) |v| freeReply(v, allocator),
+            .array => |arr| {
                 switch (@typeInfo(arr.child)) {
                     else => {},
-                    .Enum,
-                    .Union,
-                    .Struct,
-                    .Pointer,
-                    .Optional,
+                    .@"enum",
+                    .@"union",
+                    .@"struct",
+                    .pointer,
+                    .optional,
                     => {
                         for (val) |elem| {
                             freeReply(elem, allocator);
@@ -225,18 +225,18 @@ pub const RESP3Parser = struct {
                 }
                 // allocator.free(val);
             },
-            .Pointer => |ptr| switch (ptr.size) {
-                .Many => @compileError("sendAlloc is incapable of generating [*] pointers. " ++
+            .pointer => |ptr| switch (ptr.size) {
+                .many => @compileError("sendAlloc is incapable of generating [*] pointers. " ++
                     "You are passing the wrong value!"),
-                .C => allocator.free(val),
-                .Slice => {
+                .c => allocator.free(val),
+                .slice => {
                     switch (@typeInfo(ptr.child)) {
                         else => {},
-                        .Enum,
-                        .Union,
-                        .Struct,
-                        .Pointer,
-                        .Optional,
+                        .@"enum",
+                        .@"union",
+                        .@"struct",
+                        .pointer,
+                        .optional,
                         => {
                             for (val) |elem| {
                                 freeReply(elem, allocator);
@@ -245,14 +245,14 @@ pub const RESP3Parser = struct {
                     }
                     allocator.free(val);
                 },
-                .One => {
+                .one => {
                     switch (@typeInfo(ptr.child)) {
                         else => {},
-                        .Enum,
-                        .Union,
-                        .Struct,
-                        .Pointer,
-                        .Optional,
+                        .@"enum",
+                        .@"union",
+                        .@"struct",
+                        .pointer,
+                        .optional,
                         => {
                             freeReply(val.*, allocator);
                         },
@@ -260,24 +260,24 @@ pub const RESP3Parser = struct {
                     allocator.destroy(val);
                 },
             },
-            .Union => if (comptime traits.isParserType(T)) {
+            .@"union" => if (comptime traits.isParserType(T)) {
                 T.Redis.Parser.destroy(val, rootParser, allocator);
             } else {
                 @compileError("sendAlloc cannot return Unions or Enums that don't implement " ++
                     "custom parsing logic. You are passing the wrong value!");
             },
-            .Struct => |stc| {
+            .@"struct" => |stc| {
                 if (comptime traits.isParserType(T)) {
                     T.Redis.Parser.destroy(val, rootParser, allocator);
                 } else {
                     inline for (stc.fields) |f| {
                         switch (@typeInfo(f.field_type)) {
                             else => {},
-                            .Enum,
-                            .Union,
-                            .Struct,
-                            .Pointer,
-                            .Optional,
+                            .@"enum",
+                            .@"union",
+                            .@"struct",
+                            .pointer,
+                            .optional,
                             => {
                                 freeReply(@field(val, f.name), allocator);
                             },

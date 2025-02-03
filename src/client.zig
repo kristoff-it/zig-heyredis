@@ -2,6 +2,7 @@ const std = @import("std");
 const os = std.os;
 const net = std.net;
 const Allocator = std.mem.Allocator;
+
 const RESP3 = @import("./parser.zig").RESP3Parser;
 const CommandSerializer = @import("./serializer.zig").CommandSerializer;
 const OrErr = @import("./types/error.zig").OrErr;
@@ -215,7 +216,7 @@ pub fn RedisClient(comptime buffering: Buffering, comptime _: Logging) type {
                     return;
                 } else {
                     switch (@typeInfo(Ts)) {
-                        .Struct => {
+                        .@"struct" => {
                             inline for (std.meta.fields(Ts)) |field| {
                                 if (@hasField(@TypeOf(allocator), "ptr")) {
                                     @field(result, field.name) = try RESP3.parseAlloc(field.field_type, allocator.ptr, self.reader);
@@ -224,7 +225,7 @@ pub fn RedisClient(comptime buffering: Buffering, comptime _: Logging) type {
                                 }
                             }
                         },
-                        .Array => {
+                        .array => {
                             var i: usize = 0;
                             while (i < Ts.len) : (i += 1) {
                                 if (@hasField(@TypeOf(allocator), "ptr")) {
@@ -234,16 +235,16 @@ pub fn RedisClient(comptime buffering: Buffering, comptime _: Logging) type {
                                 }
                             }
                         },
-                        .Pointer => |ptr| {
+                        .pointer => |ptr| {
                             switch (ptr.size) {
-                                .One => {
+                                .one => {
                                     if (@hasField(@TypeOf(allocator), "ptr")) {
                                         result = try RESP3.parseAlloc(Ts, allocator.ptr, self.reader);
                                     } else {
                                         result = try RESP3.parse(Ts, self.reader);
                                     }
                                 },
-                                .Many => {
+                                .many => {
                                     if (@hasField(@TypeOf(allocator), "ptr")) {
                                         result = try allocator.alloc(ptr.child, ptr.size);
                                         errdefer allocator.free(result);
