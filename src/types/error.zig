@@ -288,7 +288,7 @@ test "parse simple errors" {
         .Ok, .Err => unreachable,
         .Nil => try testing.expect(true),
     }
-    var fbs_blob = MakeBadErr();
+    var fbs_blob = MakeBlobErr();
     switch (try OrErr(u8).Redis.Parser.parse('!', fakeParser, fbs_blob.reader())) {
         .Ok, .Nil => unreachable,
         .Err => |err| try testing.expectEqualSlices(u8, "ERRN\r\nOGOODFOOD", err.getCode()),
