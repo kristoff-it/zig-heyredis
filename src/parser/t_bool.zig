@@ -33,14 +33,21 @@ pub const BoolParser = struct {
 };
 
 test "parses bools" {
-    try testing.expect(true == try BoolParser.parse(bool, struct {}, TrueMSG().reader()));
-    try testing.expect(false == try BoolParser.parse(bool, struct {}, FalseMSG().reader()));
-    try testing.expect(1 == try BoolParser.parse(i64, struct {}, TrueMSG().reader()));
-    try testing.expect(0 == try BoolParser.parse(u32, struct {}, FalseMSG().reader()));
-    try testing.expect(1.0 == try BoolParser.parse(f32, struct {}, TrueMSG().reader()));
-    try testing.expect(0.0 == try BoolParser.parse(f64, struct {}, FalseMSG().reader()));
+    var fbs_true = TrueMSG();
+    try testing.expect(true == try BoolParser.parse(bool, struct {}, fbs_true.reader()));
+    var fbs_false = FalseMSG();
+    try testing.expect(false == try BoolParser.parse(bool, struct {}, fbs_false.reader()));
+    var fbs_true2 = TrueMSG();
+    try testing.expect(1 == try BoolParser.parse(i64, struct {}, fbs_true2.reader()));
+    var fbs_false2 = FalseMSG();
+    try testing.expect(0 == try BoolParser.parse(u32, struct {}, fbs_false2.reader()));
+    var fbs_true3 = TrueMSG();
+    try testing.expect(1.0 == try BoolParser.parse(f32, struct {}, fbs_true3.reader()));
+    var fbs_false3 = FalseMSG();
+    try testing.expect(0.0 == try BoolParser.parse(f64, struct {}, fbs_false3.reader()));
 }
 
+// TODO: get rid of this!
 fn TrueMSG() std.io.FixedBufferStream([]const u8) {
     return std.io.fixedBufferStream("#t\r\n"[1..]);
 }
