@@ -23,8 +23,8 @@ pub const Value = union(enum) {
     /// Wraps either a string or a number.
     pub fn fromVar(value: anytype) Value {
         return switch (@typeInfo(@TypeOf(value))) {
-            .Int, .ComptimeInt => Value{ .Int = value },
-            .Float, .ComptimeFloat => Value{ .Float = value },
+            .Int, .comptime_int => Value{ .Int = value },
+            .Float, .comptime_float => Value{ .Float = value },
             .array => Value{ .String = value[0..] },
             .pointer => Value{ .String = value },
             else => @compileError("Unsupported type."),

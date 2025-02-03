@@ -39,17 +39,16 @@ pub const CommandSerializer = struct {
         }
 
         switch (@typeInfo(CmdT)) {
-            else => {
-                @compileLog(CmdT);
-                @compileError("unsupported");
-            },
+            else => comptime unreachable,
             .@"struct" => {
+                // TODO: see isTuple
+
                 // Since we already handled structs that implement the
                 // Command trait, the expectation here is that this struct
                 // is in fact a Zig Tuple.
-                if (!(comptime std.meta.trait.isTuple(CmdT))) {
-                    @compileError("Only Zig tuples and Redis.Command types are allowed as argument to send.");
-                }
+                // if (!(comptime std.meta.trait.isTuple(CmdT))) {
+                //     @compileError("Only Zig tuples and Redis.Command types are allowed as argument to send.");
+                // }
 
                 // Count the number of arguments
                 var argNum: usize = 0;
@@ -151,7 +150,7 @@ pub const CommandSerializer = struct {
         switch (@typeInfo(T)) {
             .Int,
             .Float,
-            .ComptimeInt,
+            .comptime_int,
             => {
                 // TODO: write a better method
                 var buf: [100]u8 = undefined;
@@ -159,7 +158,7 @@ pub const CommandSerializer = struct {
                 // std.debug.warn("${}\r\n{s}\r\n", res.len, res);
                 try msg.print("${}\r\n{s}\r\n", .{ res.len, res });
             },
-            .ComptimeFloat => {
+            .comptime_float => {
                 // TODO: write a better method, avoid duplication?
                 var buf: [100]u8 = undefined;
                 var res = try std.fmt.bufPrint(buf[0..], "{}", .{@as(f64, val)});
