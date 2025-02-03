@@ -125,14 +125,17 @@ test "set" {
     const parser = @import("../parser.zig").RESP3Parser;
     const allocator = std.heap.page_allocator;
 
-    const arr = try SetParser.parse([3]i32, parser, MakeSet().reader());
+    var set1 = MakeSet();
+    const arr = try SetParser.parse([3]i32, parser, set1.reader());
     try testing.expectEqualSlices(i32, &[3]i32{ 1, 2, 3 }, &arr);
 
-    const sli = try SetParser.parseAlloc([]i64, parser, allocator, MakeSet().reader());
+    var set2 = MakeSet();
+    const sli = try SetParser.parseAlloc([]i64, parser, allocator, set2.reader());
     defer allocator.free(sli);
     try testing.expectEqualSlices(i64, &[3]i64{ 1, 2, 3 }, sli);
 
-    var hmap = try SetParser.parseAlloc(std.AutoHashMap(i64, void), parser, allocator, MakeSet().reader());
+    var set3 = MakeSet();
+    var hmap = try SetParser.parseAlloc(std.AutoHashMap(i64, void), parser, allocator, set3.reader());
     defer hmap.deinit();
 
     if (hmap.remove(1)) {} else unreachable;
@@ -142,6 +145,7 @@ test "set" {
     try testing.expectEqual(@as(usize, 0), hmap.count());
 }
 
+// TODO: get rid of this!
 fn MakeSet() std.io.FixedBufferStream([]const u8) {
     return std.io.fixedBufferStream("~3\r\n:1\r\n:2\r\n:3\r\n"[1..]);
 }

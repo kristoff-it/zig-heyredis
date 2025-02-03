@@ -121,7 +121,8 @@ test "dynamic replies" {
     }
 
     {
-        const reply = try DynamicReply.Redis.Parser.parseAlloc('|', parser, allocator, MakeComplexListWithAttributes().reader());
+        var cmplx_set = MakeComplexListWithAttributes();
+        const reply = try DynamicReply.Redis.Parser.parseAlloc('|', parser, allocator, cmplx_set.reader());
         try testing.expectEqual(@as(usize, 2), reply.attribs.len);
         try testing.expectEqualSlices(u8, "Ciao", reply.attribs[0][0].data.String.string);
         try testing.expectEqualSlices(u8, "World", reply.attribs[0][1].data.String.string);
