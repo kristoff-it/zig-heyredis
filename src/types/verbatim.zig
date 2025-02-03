@@ -118,7 +118,7 @@ test "verbatim" {
     }
 
     {
-        var verb_string_fbs = MakeBadVerbatimString();
+        var verb_string_fbs = MakeVerbatimString();
         const reply = try Verbatim.Redis.Parser.parseAlloc('=', parser, allocator, verb_string_fbs.reader());
         try testing.expectEqualSlices(u8, "Oh hello there!", reply.string);
         switch (reply.format) {
