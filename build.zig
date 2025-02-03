@@ -36,6 +36,7 @@ pub fn build(b: *std.Build) void {
     simple_example.root_module.addImport("okredis", okredis);
     const example_install = b.addInstallArtifact(simple_example, .{});
     example_step.dependOn(&example_install.step);
+    b.default_step.dependOn(example_step);
 
     const run_example = b.addRunArtifact(simple_example);
 
